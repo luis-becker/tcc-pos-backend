@@ -1,0 +1,36 @@
+{
+  "name": "tcc-pos-backend",
+  "version": "1.0.0",
+  "description": "Serviço back-end do TCC da pós-graduação Desenvolvimento Full Stack da PUCRS",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "watch": "nodemon src/index.js",
+    "docker-build": "docker build -t tcc-pos-backend .",
+    "docker-start": "docker run -d --rm -v ./:/app -p 3000:3000 tcc-pos-backend npm run start",
+    "docker-watch": "docker run -d --rm -v ./:/app -p 3000:3000 tcc-pos-backend npm run watch",
+    "test": "./node_modules/.bin/mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luis-becker/tcc-pos-backend.git"
+  },
+  "keywords": [
+    "express",
+    "nodejs"
+  ],
+  "author": "Luís Becker",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/luis-becker/tcc-pos-backend/issues"
+  },
+  "homepage": "https://github.com/luis-becker/tcc-pos-backend#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongodb": "^6.1.0"
+  },
+  "devDependencies": {
+    "mocha": "^10.2.0",
+    "nodemon": "^3.0.1"
+  }
+}

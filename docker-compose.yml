@@ -1,0 +1,32 @@
+version: '3.1'
+
+services:
+  app:
+    container_name: tcc-pos-backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./:/app
+    depends_on:
+      - mongodb
+    environment:
+      MONGO_DATABASE: development-db
+      MONGO_USER: backend-service
+      MONGO_PASSWORD: password
+    command: "npm run watch"
+
+  mongodb:
+    container_name: mongodb
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./database/data:/data/db
+      - ./database/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: secret
+      MONGO_INITDB_DATABASE: root-db
