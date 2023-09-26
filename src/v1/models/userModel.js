@@ -1,9 +1,12 @@
-const dbConnector = require('../utils/dbConnector')
+function userModel(dbConnector){
+  
+  async function createUser(user) {
+    return await dbConnector.getDb().collection('users').insertOne(user)
+  }
 
-const userModel = {}
-
-userModel.createUser = async (user) => {
-  return await dbConnector.db.collection('users').insertOne(user)
+  return {
+    createUser
+  }
 }
 
 module.exports = userModel

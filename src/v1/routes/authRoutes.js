@@ -1,16 +1,18 @@
 const express = require('express')
-const authController = require('../controllers/authController')
-const {authorization} = require('../middlewares/authMiddleware')
 
-const router = express.Router()
+function authRouter(authMiddleware, authController) {
 
-router.get('/', authorization)
-router.get('/logout', authorization)
+  const router = express.Router()
+
+  router.get('/', authMiddleware.authorization)
+  router.get('/logout', authMiddleware.authorization)
 
 
-router.get('/logout', authController.logout)
-router.get('/', authController.validateToken)
-router.post('/login', authController.login)
-router.post('/register', authController.register)
+  router.get('/logout', authController.logout)
+  router.get('/', authController.validateToken)
+  router.post('/login', authController.login)
+  router.post('/register', authController.register)
 
-module.exports = router
+  return router
+}
+module.exports = authRouter

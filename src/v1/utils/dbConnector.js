@@ -1,29 +1,40 @@
 const { MongoClient } = require('mongodb')
 
-const database = process.env.MONGO_DATABASE
-const databaseUser = process.env.MONGO_USER
-const databasePassword = process.env.MONGO_PASSWORD
+function dbConnector() {
 
-class dbConnector {
-  static db
-  static client
-  static connect = async () => {
-    if (this.db) return
-    this.client = new MongoClient(this.getConnectionString(database, databaseUser, databasePassword))
-    await this.client.connect()
-    this.db = this.client.db(database);
+  const database = process.env.MONGO_DATABASE
+  const databaseUser = process.env.MONGO_USER
+  const databasePassword = process.env.MONGO_PASSWORD
+
+  let db
+  let client
+
+  async function connect() {
+    if (db) return
+    client = new MongoClient(getConnectionString(database, databaseUser, databasePassword))
+    await client.connect()
+    db = client.db(database);
     console.log('Connected to database!')
   }
 
-  static close = async () => {
-    if(this.client) this.client.close()
+  async function close() {
+    if (client) client.close()
     console.log('Connection to database closed.')
   }
 
-  static getConnectionString = (database, user, password) => {
-    return 'mongodb://' + user + ':' + password + '@mongodb:27017/' + database
+  function getDb() {
+    if(!db) connect().then(() => db)
+    else return db
   }
 
+  return {
+    connect,
+    close,
+    getDb
+  }
 }
-
 module.exports = dbConnector
+
+function getConnectionString(database, user, password) {
+  return 'mongodb://' + user + ':' + password + '@mongodb:27017/' + database
+}

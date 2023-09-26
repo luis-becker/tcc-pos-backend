@@ -1,17 +1,22 @@
-const authService = require('../services/authService')
+function authMiddleware(authService) {
 
-authMiddleware = {}
+  function authorization(req, res, next) {
+    const authToken = req.headers.authtoken
+    authService.validateToken(authToken).then((email) => {
+      if (email) {
+        req.email = email
+        next()
+      } else {
+        res.status(401).send("Invalid Token.")
+      }
+    }).catch((err) => {
+      console.log(err)
+      res.status(500).send('Service Unavailable')
+    })
+  }
 
-authMiddleware.authorization = (req, res, next) => {
-  const authToken = req.headers.authtoken
-  authService.validateToken(authToken).then((email) => {
-    if (email) {
-      req.email = email
-      next()
-    } else {
-      res.status(401).send("Invalid Token.")
-    }
-  })
+  return {
+    authorization
+  }
 }
-
 module.exports = authMiddleware

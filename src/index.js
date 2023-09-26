@@ -1,15 +1,13 @@
 const express = require('express')
-
-const v1AuthRouter = require("./v1/routes/authRoutes")
-
-const dbConnector = require('./v1/utils/dbConnector')
+const {authRouter, dbConnector, logMiddleware} = require('./v1/config/dependencyInjection')
 
 const app = express()
 const port = 3000
 
 app.use(express.json())
+app.use(logMiddleware.logRequest)
 
-app.use("/api/v1/auth", v1AuthRouter)
+app.use("/api/v1/auth", authRouter)
 
 dbConnector.connect().then(()=>{
   app.listen(port, () => {

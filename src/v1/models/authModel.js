@@ -1,29 +1,35 @@
-const dbConnector = require('../utils/dbConnector')
+function authModel(dbConnector) {
 
-const authModel = {}
+  async function retrieveAuthByEmail(email) {
+    return await dbConnector.getDb().collection('auth').findOne({email})
+  }
 
-authModel.retrieveAuthByEmail = async (email) => {
-  return await dbConnector.db.collection('auth').findOne({email})
-}
+  async function createAuth(credentials) {
+    return await dbConnector.getDb().collection('auth').insertOne(credentials)
+  }
 
-authModel.createAuth = async (credentials) => {
-  return await dbConnector.db.collection('auth').insertOne(credentials)
-}
+  async function saveToken(dbCredentials, token) {
+    if(!dbCredentials.tokens) {
+      return await dbConnector.getDb().collection('auth').updateOne({_id: dbCredentials._id}, {$set: {tokens: [token]}})
+    } else {
+      return await dbConnector.getDb().collection('auth').updateOne({_id: dbCredentials._id}, {$push: {tokens: token}})
+    }
+  }
 
-authModel.saveToken = async (dbCredentials, token) => {
-  if(!dbCredentials.tokens) {
-    return await dbConnector.db.collection('auth').updateOne({_id: dbCredentials._id}, {$set: {tokens: [token]}})
-  } else {
-    return await dbConnector.db.collection('auth').updateOne({_id: dbCredentials._id}, {$push: {tokens: token}})
+  async function retrieveToken(token) {
+    return await dbConnector.getDb().collection('auth').findOne({'tokens.value': token})
+  }
+
+  async function deleteToken(token) {
+    return await dbConnector.getDb().collection('auth').updateOne({'tokens.value': token}, {$pull: {tokens: {value: token}}})
+  }
+
+  return {
+    retrieveAuthByEmail,
+    createAuth,
+    saveToken,
+    retrieveToken,
+    deleteToken
   }
 }
-
-authModel.retrieveToken = async (token) => {
-  return await dbConnector.db.collection('auth').findOne({'tokens.value': token})
-}
-
-authModel.deleteToken = async (token) => {
-  return await dbConnector.db.collection('auth').updateOne({'tokens.value': token}, {$pull: {tokens: {value: token}}})
-}
-
 module.exports = authModel
