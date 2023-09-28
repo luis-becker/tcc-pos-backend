@@ -9,7 +9,7 @@
     "docker-build": "docker build -t tcc-pos-backend .",
     "docker-start": "docker run -d --rm -v ./:/app -p 3000:3000 tcc-pos-backend npm run start",
     "docker-watch": "docker run -d --rm -v ./:/app -p 3000:3000 tcc-pos-backend npm run watch",
-    "test": "./node_modules/.bin/mocha"
+    "test": "./node_modules/.bin/mocha --recursive"
   },
   "repository": {
     "type": "git",

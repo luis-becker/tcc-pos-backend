@@ -7,8 +7,10 @@ function authController(authService) {
       res.status(400).send('Missing required field: email, password')
       return
     }
-    authService.register(credentials).then((response) => {
+    return authService.register(credentials).then((response) => {
       if (response && response.email && !response.error) res.status(201).send('User registered.')
+      else if (response && response.error=='E-mail already registered.') res.status(409).send(response.error)
+      else if (response && response.error) res.status(500).send(response.error)
       else res.status(500).send(response.error)
     }).catch((err) => {
       console.log(err)
@@ -22,7 +24,7 @@ function authController(authService) {
       res.status(400).send('Missing required field: email, password')
       return
     }
-    authService.login(credentials).then((token) => {
+    return authService.login(credentials).then((token) => {
       if (!token) res.status(401).send('Invalid Credentials')
       else {
         res.status(200)
@@ -41,11 +43,11 @@ function authController(authService) {
   }
   
   function validateToken(req, res){
-    res.send({email: req.email})
+    return res.send({email: req.email})
   }
   
   function logout(req, res){
-    authService.logout(req.headers.authtoken).then((isLoggedOut) => {
+    return authService.logout(req.headers.authtoken).then((isLoggedOut) => {
       if (isLoggedOut) res.status(200).send('User logged out.')
       else res.status(500).send()
     }).catch((err) => {

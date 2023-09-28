@@ -10,8 +10,7 @@ const logMiddlewareFunc = require('../middlewares/logMiddleware')
 // Auth API
 const dbConnector = dbConnectorFunc()
 const authModel = authModelFunc(dbConnector)
-const userModel = userModelFunc(dbConnector)
-const authService = authServiceFunc(authModel, userModel)
+const authService = authServiceFunc(authModel)
 const authController = authControllerFunc(authService)
 
 // Middlewares

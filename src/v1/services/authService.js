@@ -1,14 +1,12 @@
 const crypto = require('crypto')
 
-function authService(authModel, userModel) {
+function authService(authModel) {
 
   async function register(credentials) {
     if (await authModel.retrieveAuthByEmail(credentials.email)) return {email: credentials.email, error: 'E-mail already registered.'}
     let hashedCred = authFactory(credentials)
     let res = await authModel.createAuth(hashedCred)
-    if (!res.acknowledged || !res.insertedId) return {email: credentials.email, error: 'Unable to save credentials.'}
-    res = await userModel.createUser({email: credentials.email})
-    if (!res.acknowledged || !res.insertedId) return {email: credentials.email, error: 'Unable to create user.'}
+    if (!res.insertedId) return {email: credentials.email, error: 'Unable to save credentials.'}
     return {email: credentials.email, error: null}
   }
   
