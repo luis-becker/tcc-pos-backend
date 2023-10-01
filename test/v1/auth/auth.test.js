@@ -1,21 +1,25 @@
 const assert = require('assert')
 const resMocker = require('../../mocks/resMocker')
-const authServiceFunc = require('../../../src/v1/services/authService')
-const authControllerFunc = require('../../../src/v1/controllers/authController')
-const crypo = require('crypto')
+const authServiceFunc = require('../../../src/v1/services/auth.service')
+const authControllerFunc = require('../../../src/v1/controllers/auth.controller')
+const authMiddlewareFunc = require('../../../src/v1/middlewares/auth.middleware')
+const crypto = require('crypto')
 
 describe('Auth Endpoint', function () {
   let authModelMock = {}
   let userModelMock = {}
   let authService = authServiceFunc(authModelMock, userModelMock)
   let authController = authControllerFunc(authService)
+  let authMiddleware = authMiddlewareFunc(authService)
   let resMock = null
   let reqMock = null
+  let nextMock = null
 
   beforeEach(function() {
     resMock = resMocker()
     reqMock = {
-      body: null
+      body: null,
+      headers: null
     }
   })
 
@@ -122,7 +126,7 @@ describe('Auth Endpoint', function () {
       authModelMock.retrieveAuthByEmail = async function() {
         return {
           email: 'meuEmail',
-          passwordHash: crypo.pbkdf2Sync('123456', 'salt', 1000, 64, 'sha512').toString('hex'),
+          passwordHash: crypto.pbkdf2Sync('123456', 'salt', 1000, 64, 'sha512').toString('hex'),
           salt: 'salt'
         }
       }
@@ -130,10 +134,115 @@ describe('Auth Endpoint', function () {
         return {acknowledged: true}
       }
       await authController.login(reqMock, resMock)
-      assert.equal(resMock.code, 200);
-      assert.equal(resMock.message.email, 'meuEmail');
-      assert.notEqual(resMock.message.authToken.value, undefined);
-      assert.notEqual(resMock.message.authToken.expires, undefined);
+      assert.equal(resMock.code, 200)
+      assert.equal(resMock.message.email, 'meuEmail')
+      assert.notEqual(resMock.message.authToken.value, undefined)
+      assert.notEqual(resMock.message.authToken.expires, undefined)
+    })
+  })
+
+  describe('#validateToken', function () {
+    beforeEach(function() {
+      reqMock.headers = {authtoken: 'meuToken'}
+      nextMock = () => {
+        return authController.validateToken(reqMock, resMock)
+      }
+    })
+
+    it('should return 401 if token is invalid', async function () {
+      authModelMock.retrieveToken = () => null
+      await authMiddleware.authorization(reqMock, resMock, nextMock)
+      assert.equal(resMock.code, 401)
+      assert.equal(resMock.message, 'Invalid Token.')
+    })
+
+    it('should return 401 if token is expired', async function () {
+      authModelMock.retrieveToken = (token) => {
+        return {
+          email: 'meuEmail',
+          tokens: [
+            {
+              value: token,
+              expirationDate: new Date(Date.now() - 60*60*1000)
+            }
+          ]
+        }
+      }
+      await authMiddleware.authorization(reqMock, resMock, nextMock)
+      assert.equal(resMock.code, 401)
+      assert.equal(resMock.message, 'Invalid Token.')
+    })
+
+    it('should return 200 if token is valid', async function () {
+      authModelMock.retrieveToken = (token) => {
+        return {
+          email: 'meuEmail',
+          tokens: [
+            {
+              value: token,
+              expirationDate: new Date(Date.now() + 60*60*1000)
+            }
+          ]
+        }
+      }
+      await authMiddleware.authorization(reqMock, resMock, nextMock)
+      assert.equal(resMock.code, 200)
+      assert.notEqual(resMock.message, undefined)
+      assert.equal(resMock.message.email, 'meuEmail')
+    })
+  })
+
+  describe('#logout', function () {
+    beforeEach(function() {
+      reqMock.headers = {authtoken: 'meuToken'}
+      nextMock = () => {
+        return authController.logout(reqMock, resMock)
+      }
+    })
+
+    it('should return 401 if token is invalid', async function () {
+      authModelMock.retrieveToken = () => null
+      await authMiddleware.authorization(reqMock, resMock, nextMock)
+      assert.equal(resMock.code, 401)
+      assert.equal(resMock.message, 'Invalid Token.')
+    })
+
+    it('should return 401 if token is expired', async function () {
+      authModelMock.retrieveToken = async (token) => {
+        return {
+          email: 'meuEmail',
+          tokens: [
+            {
+              value: token,
+              expirationDate: new Date(Date.now() - 60*60*1000)
+            }
+          ]
+        }
+      }
+      await authMiddleware.authorization(reqMock, resMock, nextMock)
+      assert.equal(resMock.code, 401)
+      assert.equal(resMock.message, 'Invalid Token.')
+    })
+
+    it('should return 200 if token is valid', async function () {
+      authModelMock.retrieveToken = async (token) => {
+        return {
+          email: 'meuEmail',
+          tokens: [
+            {
+              value: token,
+              expirationDate: new Date(Date.now() + 60*60*1000)
+            }
+          ]
+        }
+      }
+      authModelMock.deleteToken = async () => {
+        return {matchedCount: 1}
+      }
+      await authMiddleware.authorization(reqMock, resMock, nextMock)
+      assert.equal(resMock.code, 201)
+      assert.notEqual(resMock.message, undefined)
+      assert.equal(resMock.message, 'User logged out.')
     })
   })
 })

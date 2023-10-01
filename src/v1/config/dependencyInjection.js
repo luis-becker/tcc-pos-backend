@@ -1,11 +1,11 @@
-const authModelFunc = require('../models/authModel')
-const userModelFunc = require('../models/userModel')
-const authServiceFunc = require('../services/authService')
-const authControllerFunc = require('../controllers/authController')
+const authModelFunc = require('../models/auth.model')
+const authServiceFunc = require('../services/auth.service')
+const authControllerFunc = require('../controllers/auth.controller')
 const dbConnectorFunc = require('../utils/dbConnector')
-const authMiddlewareFunc = require('../middlewares/authMiddleware')
-const authRouterFunc = require('../routes/authRoutes')
-const logMiddlewareFunc = require('../middlewares/logMiddleware')
+const authMiddlewareFunc = require('../middlewares/auth.middleware')
+const authRouterFunc = require('../routes/auth.routes')
+const logMiddlewareFunc = require('../middlewares/log.middleware')
+const errorMiddlewareFunc = require('../middlewares/error.middleware')
 
 // Auth API
 const dbConnector = dbConnectorFunc()
@@ -16,6 +16,7 @@ const authController = authControllerFunc(authService)
 // Middlewares
 const authMiddleware = authMiddlewareFunc(authService)
 const logMiddleware = logMiddlewareFunc()
+const errorMiddleware = errorMiddlewareFunc()
 
 // Routers
 const authRouter = authRouterFunc(authMiddleware, authController)
@@ -23,5 +24,6 @@ const authRouter = authRouterFunc(authMiddleware, authController)
 module.exports = {
   authRouter,
   dbConnector,
-  logMiddleware
+  logMiddleware,
+  errorMiddleware
 }
