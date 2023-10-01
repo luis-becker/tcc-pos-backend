@@ -1,6 +1,7 @@
 function authModel(dbConnector) {
 
   async function retrieveAuthByEmail(email) {
+    console.log(dbConnector)
     return await dbConnector.getDb().collection('auth').findOne({email})
   }
 

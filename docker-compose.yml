@@ -16,7 +16,7 @@ services:
       MONGO_DATABASE: development-db
       MONGO_USER: backend-service
       MONGO_PASSWORD: password
-    command: "npm run start"
+    command: "npm run watch"
 
   mongodb:
     container_name: mongodb

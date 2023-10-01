@@ -7,8 +7,7 @@ const crypto = require('crypto')
 
 describe('Auth Endpoint', function () {
   let authModelMock = {}
-  let userModelMock = {}
-  let authService = authServiceFunc(authModelMock, userModelMock)
+  let authService = authServiceFunc(authModelMock)
   let authController = authControllerFunc(authService)
   let authMiddleware = authMiddlewareFunc(authService)
   let resMock = null
