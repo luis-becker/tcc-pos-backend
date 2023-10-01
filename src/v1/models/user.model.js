@@ -4,8 +4,13 @@ function userModel(dbConnector){
     return await dbConnector.getDb().collection('users').insertOne(user)
   }
 
+  async function getUserByEmail(email) {
+    return await dbConnector.getDb().collection('users').findOne({email})
+  }
+
   return {
-    createUser
+    createUser,
+    getUserByEmail
   }
 }
 
