@@ -22,9 +22,9 @@ function dbConnector() {
     console.log('Connection to database closed.')
   }
 
-  function getDb() {
-    if(!db) connect().then(() => db)
-    else return db
+  async function getDb() {
+    if(!db) await connect()
+    return db
   }
 
   return {

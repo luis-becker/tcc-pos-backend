@@ -30,11 +30,11 @@ function authService(authModel) {
     const hashedToken = hashToken(token)
     const res = await authModel.retrieveToken(hashedToken)
     if (!res || !res.email) return null
-    const responseToken = {
+    const responseInfo = {
       email: res.email,
       token: res.tokens.find(t => t.value === hashedToken)
     }
-    if(isTokenExpired(responseToken)) return null
+    if(isTokenExpired(responseInfo.token)) return null
     return res.email
   }
   
@@ -71,9 +71,10 @@ function generateSalt() {
 }
 
 function generateToken() {
+  const expirationDate = new Date(Date.now() + 60*60*1000)
   return {
     value: crypto.randomBytes(32).toString('hex'),
-    expirationDate: new Date(new Date() + 60 * 60 * 1000)
+    expirationDate: expirationDate
   }
 }
 
@@ -94,5 +95,5 @@ function hashAndComparePassword(passwordHash, password, salt) {
 function isTokenExpired(token) {
   const expirationDate = token.expirationDate
   const currentDate = new Date()
-  return expirationDate > currentDate
+  return expirationDate < currentDate
 }

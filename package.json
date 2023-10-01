@@ -6,10 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "watch": "nodemon src/index.js",
-    "docker-build": "docker build -t tcc-pos-backend .",
-    "docker-start": "docker run -d --rm -v ./:/app -p 3000:3000 tcc-pos-backend npm run start",
-    "docker-watch": "docker run -d --rm -v ./:/app -p 3000:3000 tcc-pos-backend npm run watch",
-    "test": "./node_modules/.bin/mocha --recursive"
+    "test": "./node_modules/.bin/mocha --recursive",
+    "build": "docker build -t tcc-pos-backend ."
   },
   "repository": {
     "type": "git",
