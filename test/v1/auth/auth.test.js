@@ -240,7 +240,7 @@ describe('Auth Endpoint', function () {
         return {matchedCount: 1}
       }
       await authMiddleware.authorization(reqMock, resMock, nextMock)
-      assert.equal(resMock.code, 201)
+      assert.equal(resMock.code, 200)
       assert.notEqual(resMock.message, undefined)
       assert.equal(resMock.message, 'User logged out.')
     })
