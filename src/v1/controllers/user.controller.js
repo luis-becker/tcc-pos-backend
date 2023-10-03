@@ -20,9 +20,25 @@ function userController(userService) {
         res.status(201).send(response.user)
         return
     }
+
+    async function retrieveUser(req, res) {
+        const email = req.email
+        if(!email) {
+            res.status(400).send('Missing required field: email.')
+            return
+        }
+        const user = await userService.retrieveUser(email)
+        if(!user) {
+            res.status(404).send('User not found.')
+            return
+        }
+        res.status(200).send(user)
+        return
+    }
   
     return {
-        createUser
+        createUser,
+        retrieveUser
     }
   }
   

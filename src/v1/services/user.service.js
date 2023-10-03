@@ -9,8 +9,13 @@ function userService(userModel) {
         return {user: userSanitized, error: null}
     }
 
+    async function retrieveUser(email) {
+        return await userModel.getUserByEmail(email)
+    }
+
     return {
-        createUser
+        createUser,
+        retrieveUser
     }
 }
 module.exports = userService

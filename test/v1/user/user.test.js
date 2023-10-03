@@ -76,4 +76,30 @@ describe('User Endpoint', function () {
         })
 
     })
+
+    describe('#retrieveUser', function () {
+        it('Should retrieve user', async function () {
+            modelMock.getUserByEmail = () => {return {email: 'testEmail'}}
+            reqMock.email = 'testEmail'
+            await controller.retrieveUser(reqMock, resMock)
+            assert.equal(resMock.code, 200)
+            assert.equal(resMock.message.email, 'testEmail')
+        })
+
+        it('Should not retrieve user if email is missing', async function () {
+            modelMock.getUserByEmail = () => {return {email: 'testEmail'}}
+            reqMock.email = null
+            await controller.retrieveUser(reqMock, resMock)
+            assert.equal(resMock.code, 400)
+            assert.equal(resMock.message, 'Missing required field: email.')
+        })
+
+        it('Should not retrieve user if user does not exist', async function () {
+            modelMock.getUserByEmail = () => null
+            reqMock.email = 'testEmail'
+            await controller.retrieveUser(reqMock, resMock)
+            assert.equal(resMock.code, 404)
+            assert.equal(resMock.message, 'User not found.')
+        })
+    })
 })
