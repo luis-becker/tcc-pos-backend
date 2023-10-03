@@ -2,7 +2,6 @@ const assert = require('assert')
 const resMocker = require('../../mocks/resMocker')
 const userService = require('../../../src/v1/services/user.service')
 const userController = require('../../../src/v1/controllers/user.controller')
-const userModel = require('../../../src/v1/models/user.model')
 const testUtils = require('../../utils/testUtils')()
 
 describe('User Endpoint', function () {
