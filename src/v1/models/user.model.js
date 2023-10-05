@@ -8,9 +8,17 @@ function userModel(dbConnector){
     return await dbConnector.getDb().collection('users').findOne({email})
   }
 
+  async function updateUser(user) {
+    const updateDoc = {
+      $set: user
+    };
+    return await dbConnector.getDb().collection('users').updateOne({"email": user.email}, updateDoc)
+  }
+
   return {
     createUser,
-    getUserByEmail
+    getUserByEmail,
+    updateUser
   }
 }
 
