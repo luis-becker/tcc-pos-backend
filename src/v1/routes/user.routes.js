@@ -8,6 +8,7 @@ function userRouter(authMiddleware, userController) {
   router.post('/', userController.createUser)
   router.get('/', userController.retrieveUser)
   router.patch('/', userController.updateUser)
+  router.get('/:id', userController.retrieveUserById)
 
   return router
 }

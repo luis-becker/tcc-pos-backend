@@ -2,6 +2,7 @@ const assert = require('assert')
 const resMocker = require('../../mocks/resMocker')
 const userService = require('../../../src/v1/services/user.service')
 const userController = require('../../../src/v1/controllers/user.controller')
+const { ObjectId } = require('mongodb')
 const testUtils = require('../../utils/testUtils')()
 
 describe('User Endpoint', function () {
@@ -163,5 +164,32 @@ describe('User Endpoint', function () {
             assert.equal(resMock.message, 'User not found.')
         })
 
+    })
+
+    describe('#retrieveUserById', function () {
+        const objectId = new ObjectId()
+        it('Should retrieve user', async function () {
+            modelMock.getUserById = () => {return {_id: objectId}}
+            reqMock.params = {id: objectId.toString()}
+            await controller.retrieveUserById(reqMock, resMock)
+            assert.equal(resMock.code, 200)
+            assert.equal(resMock.message._id, objectId)
+        })
+
+        it('Should not retrieve user if id is missing', async function () {
+            modelMock.getUserById = () => {return {_id: objectId}}
+            reqMock.params = null
+            await controller.retrieveUserById(reqMock, resMock)
+            assert.equal(resMock.code, 400)
+            assert.equal(resMock.message, 'Missing required param: id.')
+        })
+
+        it('Should not retrieve user if user does not exist', async function () {
+            modelMock.getUserById = () => null
+            reqMock.params = {id: objectId.toString()}
+            await controller.retrieveUserById(reqMock, resMock)
+            assert.equal(resMock.code, 404)
+            assert.equal(resMock.message, 'User not found.')
+        })
     })
 })

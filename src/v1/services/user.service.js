@@ -20,10 +20,15 @@ function userService(userModel) {
         return await userModel.getUserByEmail(userSanitized.email)
     }
 
+    async function retrieveUserById(userId) {
+        return await userModel.getUserById(userId)
+    }
+
     return {
         createUser,
         retrieveUser,
-        updateUser
+        updateUser,
+        retrieveUserById
     }
 }
 module.exports = userService
