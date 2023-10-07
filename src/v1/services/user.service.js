@@ -30,6 +30,7 @@ module.exports = userService
 
 function sanitizeInput(user) {
     const email = user.email
+    const name = user.name
     const address = user.address
     const service = user.service
     const agenda = []
@@ -51,6 +52,7 @@ function sanitizeInput(user) {
     }
     sanitizedUser = {}
     if (email) sanitizedUser.email = email
+    if (name) sanitizedUser.name = name
     if (address) sanitizedUser.address = address
     if (service) sanitizedUser.service = service
     if (agenda.length > 0) sanitizedUser.agenda = agenda

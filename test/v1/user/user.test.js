@@ -24,6 +24,7 @@ describe('User Endpoint', function () {
         beforeEach(() => {
             user = {
                 email: 'testEmail',
+                name: 'testName',
                 address: 'testAddress',
                 service: 'testService',
                 agenda: [{
@@ -43,6 +44,7 @@ describe('User Endpoint', function () {
             assert.equal(resMock.code, 201)
             assert.notEqual(resMock.message, undefined)
             assert.equal(resMock.message.email, user.email)
+            assert.equal(resMock.message.name, user.name)
             assert.equal(resMock.message.address, user.address)
             assert.equal(resMock.message.service, user.service)
             assert.notEqual(resMock.message.agenda, undefined)
@@ -108,6 +110,7 @@ describe('User Endpoint', function () {
         beforeEach(() => {
             user = {
                 email: 'testEmail',
+                name: 'testName',
                 address: 'testAddress',
                 service: 'testService',
                 agenda: [{
@@ -129,6 +132,7 @@ describe('User Endpoint', function () {
             assert.equal(resMock.code, 200)
             assert.notEqual(resMock.message, undefined)
             assert.equal(resMock.message.email, user.email)
+            assert.equal(resMock.message.name, user.name)
             assert.equal(resMock.message.address, user.address)
             assert.equal(resMock.message.service, user.service)
             assert.notEqual(resMock.message.agenda, undefined)
