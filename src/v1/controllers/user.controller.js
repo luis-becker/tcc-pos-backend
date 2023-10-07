@@ -37,7 +37,6 @@ function userController(userService) {
     }
 
     async function updateUser(req, res) {
-        const email = req.email
         let user = req.body
         if(!user.email) {
             res.status(400).send('Missing required field: email.')
@@ -55,11 +54,24 @@ function userController(userService) {
         res.status(200).send(user)
         return
     }
+
+    async function retrieveUserById(req, res) {
+        const userId = req.params?.id
+        if (!userId) {
+            res.status(400).send('Missing required param: id.')
+            return
+        }
+        const user = await userService.retrieveUserById(userId)
+        if (!user) res.status(404).send('User not found.')
+        else res.status(200).send(user)
+        return
+    }
   
     return {
         createUser,
         retrieveUser,
-        updateUser
+        updateUser,
+        retrieveUserById
     }
   }
   

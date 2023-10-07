@@ -1,3 +1,5 @@
+const { ObjectId } = require("mongodb");
+
 function userModel(dbConnector){
   
   async function createUser(user) {
@@ -15,10 +17,21 @@ function userModel(dbConnector){
     return await dbConnector.getDb().collection('users').updateOne({"email": user.email}, updateDoc)
   }
 
+  async function getUserById(userId) {
+    try {
+      objId = new ObjectId(userId)
+    }
+    catch {
+      return null
+    }
+    return await dbConnector.getDb().collection('users').findOne({_id: objId})
+  }
+
   return {
     createUser,
     getUserByEmail,
-    updateUser
+    updateUser,
+    getUserById
   }
 }
 
