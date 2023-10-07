@@ -18,7 +18,13 @@ function userModel(dbConnector){
   }
 
   async function getUserById(userId) {
-    return await dbConnector.getDb().collection('users').findOne({_id: ObjectId(userId)})
+    try {
+      objId = new ObjectId(userId)
+    }
+    catch {
+      return null
+    }
+    return await dbConnector.getDb().collection('users').findOne({_id: new ObjectId(userId)})
   }
 
   return {

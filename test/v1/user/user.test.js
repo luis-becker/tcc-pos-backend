@@ -172,12 +172,13 @@ describe('User Endpoint', function () {
 
     describe('#retrieveUserById', function () {
         const objectId = new ObjectId()
-        it('Should retrieve user', async function () {
-            modelMock.getUserById = () => {return {_id: objectId}}
+        it('Should retrieve user without email', async function () {
+            modelMock.getUserById = () => {return {_id: objectId, email: 'email'}}
             reqMock.params = {id: objectId.toString()}
             await controller.retrieveUserById(reqMock, resMock)
             assert.equal(resMock.code, 200)
             assert.equal(resMock.message._id, objectId)
+            assert.equal(resMock.message.email, undefined)
         })
 
         it('Should not retrieve user if id is missing', async function () {
