@@ -24,7 +24,7 @@ function userModel(dbConnector){
     catch {
       return null
     }
-    return await dbConnector.getDb().collection('users').findOne({_id: new ObjectId(userId)})
+    return await dbConnector.getDb().collection('users').findOne({_id: objId})
   }
 
   return {
