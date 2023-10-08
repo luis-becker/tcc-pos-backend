@@ -1,16 +1,44 @@
-const copyAttributes = require("../utils/copyAttributes")
+const { Schema, model } = require('mongoose')
 
-class Schedule {
-  
-  constructor(params) {
-    copyAttributes(this, params, keys)
+let userSchema = new Schema({
+  ref: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  name: {
+    type: String,
+    require: true
   }
+}, { _id: false })
 
-  save() {
+let timeSchema = new Schema({
+  start: {
+    type: Date,
+    required: true
+  },
+  end: {
+    type: Date,
+    required: true,
+    validate: function (value) {
+      return this.start < value;
+    }
+  },
+}, { _id: false })
 
+let scheduleSchema = new Schema({
+  owner: userSchema,
+  attendee: userSchema,
+  service: {
+    type: String
+  },
+  address: {
+    type: String
+  },
+  time: timeSchema,
+  canceled: {
+    type: Boolean
   }
+})
 
-}
-
-module.exports = Schedule
-
+module.exports = model('Schedule', scheduleSchema)

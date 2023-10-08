@@ -1,5 +1,7 @@
 const express = require('express')
 const {dbConnector, middlewares, routers} = require('./v1/config/dependencyTree')
+const database = require('./v1/utils/mongooseConnector')
+console.log(database)
 
 const app = express()
 const port = 3000
@@ -10,6 +12,7 @@ app.use(middlewares.error.stdError)
 
 app.use('/api/v1/auth', routers.auth)
 app.use('/api/v1/user', routers.user)
+app.use('/api/v1/schedule', routers.schedule)
 
 dbConnector.connect().then(()=>{
   app.listen(port, () => {

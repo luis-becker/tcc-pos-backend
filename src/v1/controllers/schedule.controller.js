@@ -1,14 +1,18 @@
+const {ValidationError} = require("mongoose").Error
+
 function scheduleController(scheduleService) {
 
   async function createSchedule(req, res) {
-    const {schedule, err} = await scheduleService.createSchedule(req.body, req.email)
-    if(err) {
-      err == 'Schedule conflict.' ? res.status(409) : res.status(500)
-      res.send(err)
-      return
-  }
-  res.status(201).send(schedule)
-  return
+    try{
+      const schedule = await scheduleService.createSchedule(req.body, req.email)
+      res.send(schedule)
+    } catch(err) {
+      if(err instanceof ValidationError) {
+        res.status(400).send(err.message)
+      } else {
+        res.status(500).send('Service Unavailable.')
+      } 
+    }
   }
 
   return {

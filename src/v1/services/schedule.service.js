@@ -1,10 +1,8 @@
-function scheduleService(Schedule) {
+function scheduleService(scheduleModel) {
 
   async function createSchedule(params) {
-    let schedule = new Schedule(params)
-    let {insertedId} = await schedule.save()
-    if (!insertedId) return { schedule: schedule, err: 'Unable to create schedule.' }
-    return {schedule: schedule, err: null}
+    let schedule = new scheduleModel(params)
+    return await schedule.save()
   }
 
   return {
@@ -13,7 +11,3 @@ function scheduleService(Schedule) {
 }
 
 module.exports = scheduleService
-
-function checkConflicts(shedule, listOfSchedules) {
-
-}

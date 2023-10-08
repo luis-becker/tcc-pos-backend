@@ -1,11 +1,11 @@
 let mongoose = require('mongoose')
 
-const host = process.env.MONGO_DATABASE || 'mongodb:27017'
+const host = process.env.MONGO_HOST || 'mongodb:27017'
 const database = process.env.MONGO_DATABASE
 const databaseUser = process.env.MONGO_USER
 const databasePassword = process.env.MONGO_PASSWORD
 
-class Databse {
+class Database {
   constructor() {
     this._connect()
   }
@@ -20,4 +20,4 @@ class Databse {
 }
 
 
-module.exports = new Databse
+module.exports = new Database
