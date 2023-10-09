@@ -8,8 +8,8 @@ function scheduleRouter(authMiddleware, scheduleController) {
 
   router.post('/', scheduleController.createSchedule)
   router.get('/', scheduleController.retrieveSchedules)
-  // router.get('/:id', scheduleController.retrieveSchedule)
-  // router.delete('/:id', scheduleController.deleteSchedule)
+  router.get('/:id', scheduleController.retrieveSchedule)
+  router.delete('/:id', scheduleController.cancelSchedule)
 
 
   return router

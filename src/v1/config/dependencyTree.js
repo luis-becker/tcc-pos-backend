@@ -13,7 +13,7 @@ const userRouter = require('../routes/user.routes')
 const scheduleModel = require('../models/schedule.model')
 const scheduleService = require('../services/schedule.service')
 const scheduleController = require('../controllers/schedule.controller')
-const scheduleRouter = require('../routes/schedules.routes')
+const scheduleRouter = require('../routes/schedule.routes')
 
 
 
@@ -45,7 +45,7 @@ const controllers = {
 const middlewares = {
   log: logMiddleware(),
   error: errorMiddleware(),
-  auth: authMiddleware(services.auth)
+  auth: authMiddleware(services.auth, services.user)
 }
 
 // Routers

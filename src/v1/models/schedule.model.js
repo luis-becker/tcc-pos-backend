@@ -1,5 +1,4 @@
 const { Schema, model } = require('mongoose')
-const validator = require('validator')
 
 let userSchema = new Schema({
   ref: {
@@ -9,12 +8,6 @@ let userSchema = new Schema({
   },
   name: {
     type: String
-  },
-  email: {
-    type: String,
-    validate: function (value) {
-      return validator.isEmail(value)
-    }
   }
 }, { _id: false })
 
@@ -33,15 +26,24 @@ let timeSchema = new Schema({
 }, { _id: false })
 
 let scheduleSchema = new Schema({
-  owner: userSchema,
-  attendee: userSchema,
+  owner: {
+    type: userSchema,
+    required: true
+  },
+  attendee: {
+    type: userSchema,
+    required: true
+  },
   service: {
     type: String
   },
   address: {
     type: String
   },
-  time: timeSchema,
+  time: {
+    type: timeSchema,
+    required: true
+  },
   canceled: {
     type: Boolean
   }

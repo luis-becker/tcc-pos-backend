@@ -4,12 +4,21 @@ const authServiceFunc = require('../../../src/v1/services/auth.service')
 const authControllerFunc = require('../../../src/v1/controllers/auth.controller')
 const authMiddlewareFunc = require('../../../src/v1/middlewares/auth.middleware')
 const crypto = require('crypto')
+const { ObjectId } = require('mongodb')
 
 describe('Auth Endpoint', function () {
   let authModelMock = {}
   let authService = authServiceFunc(authModelMock)
   let authController = authControllerFunc(authService)
-  let authMiddleware = authMiddlewareFunc(authService)
+  let userServiceMock = {
+    retrieveUser: async function() {
+      return {_id: new ObjectId()}
+    },
+    createUser: async function() {
+      return {}
+    }
+  }
+  let authMiddleware = authMiddlewareFunc(authService, userServiceMock)
   let resMock = null
   let reqMock = null
   let nextMock = null
