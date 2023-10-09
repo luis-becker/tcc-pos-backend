@@ -7,7 +7,7 @@ function scheduleRouter(authMiddleware, scheduleController) {
   router.use(authMiddleware.authorization)
 
   router.post('/', scheduleController.createSchedule)
-  // router.get('/', scheduleController.retrieveSchedules)
+  router.get('/', scheduleController.retrieveSchedules)
   // router.get('/:id', scheduleController.retrieveSchedule)
   // router.delete('/:id', scheduleController.deleteSchedule)
 

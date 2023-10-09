@@ -1,4 +1,5 @@
 const { Schema, model } = require('mongoose')
+const validator = require('validator')
 
 let userSchema = new Schema({
   ref: {
@@ -7,8 +8,13 @@ let userSchema = new Schema({
     required: true
   },
   name: {
+    type: String
+  },
+  email: {
     type: String,
-    require: true
+    validate: function (value) {
+      return validator.isEmail(value)
+    }
   }
 }, { _id: false })
 

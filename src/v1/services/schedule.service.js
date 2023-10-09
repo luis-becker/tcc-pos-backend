@@ -5,8 +5,14 @@ function scheduleService(scheduleModel) {
     return await schedule.save()
   }
 
+  async function retrieveSchedules(userEmail) {
+    let schedules = await scheduleModel.find({ $or: [{ 'owner.email': userEmail }, { 'attendee.email': userEmail }] }).select('-owner.email -attendee.email')
+    return schedules
+  }
+
   return {
-    createSchedule
+    createSchedule,
+    retrieveSchedules
   }
 }
 
