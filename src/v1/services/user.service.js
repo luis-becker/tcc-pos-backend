@@ -27,6 +27,12 @@ function userService(userModel) {
         return user
     }
 
+    async function retrieveUserById(userId) {
+        const user = await userModel.getUserById(userId)
+        delete user?.email
+        return user
+    }
+
     return {
         createUser,
         retrieveUserByEmail,
