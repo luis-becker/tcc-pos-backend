@@ -6,7 +6,8 @@ function scheduleController(scheduleService) {
     try {
       const schedule = await scheduleService.createSchedule(req.body, req.userId)
       res.status(201).send(schedule)
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof ValidationError) {
         res.status(400).send(err.message)
       } else {

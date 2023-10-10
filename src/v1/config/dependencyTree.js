@@ -23,7 +23,7 @@ const dbConnector = dbConnectorF()
 // Models
 const models = {
   auth: authModel(dbConnector),
-  user: userModel(dbConnector),
+  user: userModel,
   schedule: scheduleModel,
 }
 

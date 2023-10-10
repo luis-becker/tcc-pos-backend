@@ -6,7 +6,6 @@ const modelMocker = require('../../mocks/modelMocker')
 const scheduleModel = require('../../../src/v1/models/schedule.model')
 const { CastError } = require('mongoose').Error
 const { ObjectId } = require('mongoose').Types
-const testUtils = require('../../utils/testUtils')()
 
 describe('Schedule Endpoint', function () {
     let modelMock
@@ -46,7 +45,6 @@ describe('Schedule Endpoint', function () {
         it('Should create schedule', async function () {
             reqMock.body = schedule
             await controller.createSchedule(reqMock, resMock)
-            console.log(resMock)
             assert.equal(resMock.code, 201)
             assert.equal(resMock.message?.owner?.ref, schedule.owner.ref)
             assert.equal(resMock.message?.owner?.name, schedule.owner.name)

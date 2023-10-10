@@ -2,21 +2,30 @@ const assert = require('assert')
 const resMocker = require('../../mocks/resMocker')
 const userService = require('../../../src/v1/services/user.service')
 const userController = require('../../../src/v1/controllers/user.controller')
-const { ObjectId } = require('mongodb')
+const modelMocker = require('../../mocks/modelMocker')
+const userModel = require('../../../src/v1/models/user.model')
+const { CastError } = require('mongoose').Error
+const { ObjectId } = require('mongoose').Types
 const testUtils = require('../../utils/testUtils')()
 
 describe('User Endpoint', function () {
-    let modelMock = {}
-    let service = userService(modelMock)
-    let controller = userController(service)
-    let resMock = null
-    let reqMock = null
+    let modelMock
+    let service
+    let controller
+    let resMock
+    let reqMock
 
     beforeEach(() => {
+        modelMock = modelMocker(userModel)
+        service = userService(modelMock)
+        controller = userController(service)
         resMock = resMocker()
         reqMock = {
             header: null,
-            body: null
+            body: null,
+            email: 'someEmail@someHost.com',
+            userId: (new ObjectId()).toString(),
+            params: { id: (new ObjectId()).toString() }
         }
     })
 
@@ -34,79 +43,43 @@ describe('User Endpoint', function () {
                     endTime: { hour: 11, minute: 30 }
                 }]
             }
+            modelMock.objList = [user]
+            reqMock.body = user
         })
 
         it('Should create user', async function () {
-            modelMock.getUserByEmail = () => null
-            modelMock.createUser = () => { return {insertedId: 1}}
-            reqMock.email = user.email
-            reqMock.body = user
             await controller.createUser(reqMock, resMock)
             assert.equal(resMock.code, 201)
-            assert.notEqual(resMock.message, undefined)
-            assert.equal(resMock.message.email, user.email)
-            assert.equal(resMock.message.name, user.name)
-            assert.equal(resMock.message.address, user.address)
-            assert.equal(resMock.message.service, user.service)
-            assert.notEqual(resMock.message.agenda, undefined)
-            assert.equal(resMock.message.agenda.length, user.agenda.length)
-            assert.equal(testUtils.isDeepEqual(resMock.message.agenda[0], user.agenda[0]), true)
-        })
-
-        it('Should not create user if email does not match', async function () {
-            reqMock.email = 'OtherEmail'
-            reqMock.body = user
-            await controller.createUser(reqMock, resMock)
-            assert.equal(resMock.code, 401)
-            assert.equal(resMock.message, 'New user email does not match logged user email.')
-        })
-
-        it('Should not create user if email is missing', async function () {
-            reqMock.email = user.email
-            reqMock.body = {}
-            await controller.createUser(reqMock, resMock)
-            assert.equal(resMock.code, 400)
-            assert.equal(resMock.message, 'Missing required field: email.')
+            assert.equal(resMock.message?.email, reqMock.email)
+            assert.equal(resMock.message?.name, user.name)
+            assert.equal(resMock.message?.address, user.address)
+            assert.equal(resMock.message?.service, user.service)
+            assert.equal(resMock.message?.agenda?.length, user.agenda.length)
+            assert.equal(resMock.message?.agenda[0].weekDay, user.agenda[0].weekDay)
+            assert.equal(resMock.message?.agenda[0].startTime.hour, user.agenda[0].startTime.hour)
+            assert.equal(resMock.message?.agenda[0].startTime.minute, user.agenda[0].startTime.minute)
+            assert.equal(resMock.message?.agenda[0].endTime.hour, user.agenda[0].endTime.hour)
+            assert.equal(resMock.message?.agenda[0].endTime.minute, user.agenda[0].endTime.minute)
         })
 
         it('Should not create user if user already exists', async function () {
-            modelMock.getUserByEmail = () => {return {email: user.email}}
-            reqMock.email = user.email
-            reqMock.body = user
+            modelMock.prototype.save = async function () {
+                throw { code: 11000 }
+            }
             await controller.createUser(reqMock, resMock)
             assert.equal(resMock.code, 409)
             assert.equal(resMock.message, 'User already exists.')
         })
 
+        it('Should not create user if agenda is invalid', async function () {
+            user.agenda[0].weekDay = 7
+            user.agenda[0].endTime.hour = 18
+            await controller.createUser(reqMock, resMock)
+            assert.equal(resMock.code, 400)
+        })
     })
 
     describe('#retrieveUser', function () {
-        it('Should retrieve user', async function () {
-            modelMock.getUserByEmail = () => {return {email: 'testEmail'}}
-            reqMock.email = 'testEmail'
-            await controller.retrieveUser(reqMock, resMock)
-            assert.equal(resMock.code, 200)
-            assert.equal(resMock.message.email, 'testEmail')
-        })
-
-        it('Should not retrieve user if email is missing', async function () {
-            modelMock.getUserByEmail = () => {return {email: 'testEmail'}}
-            reqMock.email = null
-            await controller.retrieveUser(reqMock, resMock)
-            assert.equal(resMock.code, 400)
-            assert.equal(resMock.message, 'Missing required field: email.')
-        })
-
-        it('Should not retrieve user if user does not exist', async function () {
-            modelMock.getUserByEmail = () => null
-            reqMock.email = 'testEmail'
-            await controller.retrieveUser(reqMock, resMock)
-            assert.equal(resMock.code, 404)
-            assert.equal(resMock.message, 'User not found.')
-        })
-    })
-
-    describe('#updateUser', function () {
         let user
         beforeEach(() => {
             user = {
@@ -120,49 +93,56 @@ describe('User Endpoint', function () {
                     endTime: { hour: 11, minute: 30 }
                 }]
             }
+            modelMock.objList = [user]
+        })
+
+        it('Should retrieve user', async function () {
+            await controller.retrieveUser(reqMock, resMock)
+            assert.equal(resMock.code, 200)
+            assert.equal(resMock.message.email, user.email)
+        })
+
+        it('Should not retrieve user if user does not exist', async function () {
+            modelMock.objList = []
+            await controller.retrieveUser(reqMock, resMock)
+            assert.equal(resMock.code, 404)
+            assert.equal(resMock.message, 'User not found.')
+        })
+    })
+
+    describe('#updateUser', function () {
+        let user
+        beforeEach(() => {
+            user = {
+                email: 'testEmail@testHost.com',
+                name: 'testName',
+                address: 'testAddress',
+                service: 'testService',
+                agenda: [{
+                    weekDay: 1,
+                    time: {
+                        start: { hour: 10, minute: 30 },
+                        end: { hour: 11, minute: 30 }
+                    }
+                }]
+            }
+            modelMock.objList = [user]
+            reqMock.body = { ...user }
+            reqMock.body.agenda = user.agenda.map(e => ({ ...e }))
         })
 
         it('Should update user', async function () {
-            modelMock.updateUser = () => {
-                return {matchedCount: 1}
-            }
-            modelMock.getUserByEmail = () => {return user}
-            reqMock.email = user.email
-            reqMock.body = user
             await controller.updateUser(reqMock, resMock)
             assert.equal(resMock.code, 200)
-            assert.notEqual(resMock.message, undefined)
-            assert.equal(resMock.message.email, user.email)
-            assert.equal(resMock.message.name, user.name)
-            assert.equal(resMock.message.address, user.address)
-            assert.equal(resMock.message.service, user.service)
-            assert.notEqual(resMock.message.agenda, undefined)
-            assert.equal(resMock.message.agenda.length, user.agenda.length)
-            assert.equal(testUtils.isDeepEqual(resMock.message.agenda[0], user.agenda[0]), true)
-        })
-
-        it('Should not update user if email does not match', async function () {
-            reqMock.email = 'OtherEmail'
-            reqMock.body = user
-            await controller.updateUser(reqMock, resMock)
-            assert.equal(resMock.code, 401)
-            assert.equal(resMock.message, 'User to update email does not match logged user email.')
-        })
-
-        it('Should not update user if email is missing', async function () {
-            reqMock.email = user.email
-            reqMock.body = {}
-            await controller.updateUser(reqMock, resMock)
-            assert.equal(resMock.code, 400)
-            assert.equal(resMock.message, 'Missing required field: email.')
+            assert.equal(resMock.message?.email, user.email)
+            assert.equal(resMock.message?.name, user.name)
+            assert.equal(resMock.message?.address, user.address)
+            assert.equal(resMock.message?.service, user.service)
+            assert.equal(resMock.message?.agenda?.length, user.agenda.length)
         })
 
         it('Should not update user if user does not exists', async function () {
-            modelMock.updateUser = () => {
-                return {matchedCount: 0}
-            }
-            reqMock.email = user.email
-            reqMock.body = user
+            modelMock.objList = []
             await controller.updateUser(reqMock, resMock)
             assert.equal(resMock.code, 404)
             assert.equal(resMock.message, 'User not found.')
@@ -171,30 +151,45 @@ describe('User Endpoint', function () {
     })
 
     describe('#retrieveUserById', function () {
-        const objectId = new ObjectId()
+        let user
+        beforeEach(() => {
+            user = {
+                email: 'testEmail@testHost.com',
+                name: 'testName',
+                address: 'testAddress',
+                service: 'testService',
+                agenda: [{
+                    weekDay: 1,
+                    time: {
+                        start: { hour: 10, minute: 30 },
+                        end: { hour: 11, minute: 30 }
+                    }
+                }]
+            }
+            modelMock.objList = [user]
+        })
+        
         it('Should retrieve user without email', async function () {
-            modelMock.getUserById = () => {return {_id: objectId, email: 'email'}}
-            reqMock.params = {id: objectId.toString()}
             await controller.retrieveUserById(reqMock, resMock)
             assert.equal(resMock.code, 200)
-            assert.equal(resMock.message._id, objectId)
-            assert.equal(resMock.message.email, undefined)
-        })
-
-        it('Should not retrieve user if id is missing', async function () {
-            modelMock.getUserById = () => {return {_id: objectId}}
-            reqMock.params = null
-            await controller.retrieveUserById(reqMock, resMock)
-            assert.equal(resMock.code, 400)
-            assert.equal(resMock.message, 'Missing required param: id.')
+            assert.equal(resMock.message._doc.email, undefined)
         })
 
         it('Should not retrieve user if user does not exist', async function () {
-            modelMock.getUserById = () => null
-            reqMock.params = {id: objectId.toString()}
+            modelMock.objList = []
             await controller.retrieveUserById(reqMock, resMock)
             assert.equal(resMock.code, 404)
             assert.equal(resMock.message, 'User not found.')
+        })
+
+        it('Should not retrieve user if id is invalid', async function () {
+            reqMock.params.id = 'invalidId'
+            modelMock.findOne = async function (params) {
+                throw new CastError('Invalid id.')
+            }
+            await controller.retrieveUserById(reqMock, resMock)
+            assert.equal(resMock.code, 400)
+            assert.equal(resMock.message, 'Invalid id.')
         })
     })
 })

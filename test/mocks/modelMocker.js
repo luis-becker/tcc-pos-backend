@@ -5,6 +5,7 @@ function modelMocker(model, objList) {
 
         constructor(params) {
             this.obj = new model(params)
+            this._doc = this.obj._doc
             for (const key in this.obj._doc) {
                 this[key] = this.obj._doc[key];
             }
@@ -25,6 +26,14 @@ function modelMocker(model, objList) {
         static async findOne(params) {
             if(this.objList.length > 0) {
                 return new this(this.objList[0])
+            }
+            return null
+        }
+
+        static async findOneAndUpdate(params) {
+            if(this.objList.length > 0) {
+                let obj = new this(this.objList[0])
+                return obj.save()
             }
             return null
         }
