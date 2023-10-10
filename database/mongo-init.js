@@ -11,22 +11,3 @@ db.createUser(
     ]
   }
 );
-db.createCollection('users');
-db.createCollection('auth');
-db.createCollection('schedules');
-
-db = db.getSiblingDB('test-db');
-db.createUser(
-  {
-    user: 'test-user',
-    pwd: 'password',
-    roles: [
-      { role: 'readWrite',
-       db: 'test-db' 
-      }
-    ],
-  },
-);
-db.createCollection('users');
-db.createCollection('auth');
-db.createCollection('schedules');

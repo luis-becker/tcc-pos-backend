@@ -1,35 +1,45 @@
-function authModel(dbConnector) {
+const { Schema, model } = require('mongoose')
+const validator = require('validator')
 
-  async function retrieveAuthByEmail(email) {
-    return await dbConnector.getDb().collection('auth').findOne({email})
-  }
+let tokenSchema = new Schema({
+  value: String,
+  expirationDate: Date,
+}, {_id: false})
 
-  async function createAuth(credentials) {
-    return await dbConnector.getDb().collection('auth').insertOne(credentials)
+let authSchema = new Schema({
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    validate: function (value) {
+      return validator.isEmail(value)
+    },
+  },
+  password: {
+    type: String,
+    required: true,
+    validate: function (value) {
+      return validator.isHash(value, 'sha512')
+    },
+  },
+  salt: {
+    type: String,
+    required: true,
+  },
+  tokens: {
+    type: [tokenSchema],
+    validate: function (value) {
+      let isValid = true
+      value.forEach(e => {
+        if(!validator.isHash(e.value, 'sha512')) isValid = false
+      })
+      return isValid
+    },
   }
+})
 
-  async function saveToken(dbCredentials, token) {
-    if(!dbCredentials.tokens) {
-      return await dbConnector.getDb().collection('auth').updateOne({_id: dbCredentials._id}, {$set: {tokens: [token]}})
-    } else {
-      return await dbConnector.getDb().collection('auth').updateOne({_id: dbCredentials._id}, {$push: {tokens: token}})
-    }
-  }
-
-  async function retrieveToken(token) {
-    return await dbConnector.getDb().collection('auth').findOne({'tokens.value': token})
-  }
-
-  async function deleteToken(token) {
-    return await dbConnector.getDb().collection('auth').updateOne({'tokens.value': token}, {$pull: {tokens: {value: token}}})
-  }
-
-  return {
-    retrieveAuthByEmail,
-    createAuth,
-    saveToken,
-    retrieveToken,
-    deleteToken
-  }
-}
-module.exports = authModel
+module.exports = model('Auth', authSchema)

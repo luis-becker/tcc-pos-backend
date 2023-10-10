@@ -1,13 +1,26 @@
-function authMiddleware(authService) {
+function authMiddleware(authService, userService) {
 
   async function authorization(req, res, next) {
-    const authToken = req.headers.authtoken
-    const email = await authService.validateToken(authToken)
-    if (email) {
-      req.email = email
-      await next()
-    } else {
-      res.status(401).send('Invalid Token.')
+    try {
+      let auth = await authService.validateToken(req.headers.authtoken)
+      if (!auth) {
+        res.status(401).send('Invalid Token.')
+        return
+      }
+      if (!auth.user) {
+        let user = await userService.retrieveUserByEmail(auth.email)
+        if (user) {
+          auth = await authService.addUserRef(user._id, auth.email)
+        }
+      }
+  
+      req.email = auth.email
+      req.userId = auth.user
+  
+      next()
+    }
+    catch (err) {
+      res.status(500).send(err.message)
     }
   }
 

@@ -2,69 +2,63 @@ const crypto = require('crypto')
 
 function authService(authModel) {
 
-  async function register(credentials) {
-    if (await authModel.retrieveAuthByEmail(credentials.email)) return {email: credentials.email, error: 'E-mail already registered.'}
-    let hashedCred = authFactory(credentials)
-    let res = await authModel.createAuth(hashedCred)
-    if (!res.insertedId) return {email: credentials.email, error: 'Unable to save credentials.'}
-    return {email: credentials.email, error: null}
-  }
-  
-  async function login(credentials) {
-    const dbCredentials = await authModel.retrieveAuthByEmail(credentials.email)
-    if (!dbCredentials || !dbCredentials.email) return null
-    if (!hashAndComparePassword(dbCredentials.passwordHash, credentials.password, dbCredentials.salt)) return null
-    const newToken = generateToken()
-    const hashedTokenValue = hashToken(newToken.value)
-    const hashedToken = {
-      value: hashedTokenValue,
-      expirationDate: newToken.expirationDate
+  async function createAuth(params) {
+    params.salt = generateSalt()
+    if(params.password) {
+      params.password = hashPassowrd(params.password, params.salt)
     }
-    const res = await authModel.saveToken(dbCredentials, hashedToken)
-    if (!res?.acknowledged) return null
-    return newToken
+    let auth = new authModel(params)
+    return await auth.save()
   }
   
-  async function validateToken(token) {
-    if(!token) return null
-    const hashedToken = hashToken(token)
-    const res = await authModel.retrieveToken(hashedToken)
-    if (!res || !res.email) return null
-    const responseInfo = {
-      email: res.email,
-      token: res.tokens.find(t => t.value === hashedToken)
-    }
-    if(isTokenExpired(responseInfo.token)) return null
-    return res.email
+  async function login(params) {
+    if (!params || !params.email || !params.password) return null
+    let auth = await authModel.findOne({ email: params.email })
+    if (!auth) return null
+    params.password = hashPassowrd(params.password, auth.salt)
+    if (auth.password !== params.password) return null
+    let token = generateToken()
+    auth.tokens.push({ value: hashToken(token.value), expirationDate: token.expirationDate})
+    await auth.save()
+    return token
   }
   
-  async function logout(token) {
-    const hashedToken = hashToken(token)
-    let res = await authModel.retrieveToken(hashedToken)
-    if(!res && !res?.token) throw new InvalidToken('Token is invalid.')
-    res = await authModel.deleteToken(hashedToken)
-    if(res && res.matchedCount===1) return true
-    return false
+  async function validateToken(param) {
+    if(!param) return null
+    let hashedToken = hashToken(param)
+    let auth = await authModel.findOne({ 'tokens.value': hashedToken })
+    if (!auth) return null
+    let token = auth.tokens.find(e => e.value === hashedToken)
+    if(isTokenExpired(token)) return null
+    return { user: auth.user, email: auth.email}
+  }
+  
+  async function logout(param) {
+    if(!param) return null
+    let hashedToken = hashToken(param)
+    let auth = await authModel.findOne({ 'tokens.value': hashedToken })
+    if (!auth) return null
+    auth.tokens = auth.tokens.filter(e => e.value !== hashedToken)
+    await auth.save()
+    return auth.email
+  }
+
+  async function addUserRef(userId, email) {
+    let auth = await authModel.findOne({ email: email })
+    auth.user = userId
+    await auth.save()
+    return { user: auth.user, email: auth.email}
   }
 
   return {
-    register,
+    createAuth,
     login,
     validateToken,
-    logout
+    logout,
+    addUserRef
   }
 }
 module.exports = authService
-
-function authFactory(auth) {
-  const salt = generateSalt()
-  const passwordHash = hashPassowrd(auth.password, salt)
-  return {
-    email: auth.email,
-    passwordHash: passwordHash,
-    salt: salt
-  }
-}
 
 function generateSalt() {
   return crypto.randomBytes(16).toString('hex')
@@ -83,13 +77,7 @@ function hashPassowrd(password, salt) {
 }
 
 function hashToken(token) {
-  const hash = crypto.createHash('sha256').update(token);
-  return hash.digest('hex')
-}
-
-function hashAndComparePassword(passwordHash, password, salt) {
-  const inputPasswordHash = hashPassowrd(password, salt)
-  return passwordHash === inputPasswordHash
+  return crypto.createHash('sha512').update(token).digest('hex')
 }
 
 function isTokenExpired(token) {

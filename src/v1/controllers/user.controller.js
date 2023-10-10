@@ -1,70 +1,48 @@
+const { ValidationError, CastError } = require("mongoose").Error
 
 function userController(userService) {
   
     async function createUser(req, res) {
-        const user = req.body
-        if(!user || !user.email) {
-            res.status(400).send('Missing required field: email.')
-            return
-        } 
-        if(user.email != req.email) {
-            res.status(401).send('New user email does not match logged user email.')
-            return
+        try {
+            const user = await userService.createUser(req.body, req.email)
+            res.status(201).send(user)
+        } catch (err) {
+            if (err instanceof ValidationError) res.status(400).send(err.message)
+            else if (err.code === 11000) res.status(409).send('User already exists.')
+            else res.status(500).send(err)
         }
-        const response = await userService.createUser(user)
-        if(response.error) {
-            response.error == 'User already exists.' ? res.status(409) : res.status(500)
-            res.send(response.error)
-            return
-        }
-        res.status(201).send(response.user)
-        return
     }
 
     async function retrieveUser(req, res) {
-        const email = req.email
-        if(!email) {
-            res.status(400).send('Missing required field: email.')
-            return
+        try {
+            const user = await userService.retrieveUserByEmail(req.email)
+            if (!user) res.status(404).send('User not found.')
+            else res.send(user)
+        } catch (err) {
+            res.status(500).send(err.message)
         }
-        const user = await userService.retrieveUser(email)
-        if(!user) {
-            res.status(404).send('User not found.')
-            return
-        }
-        res.status(200).send(user)
-        return
     }
 
     async function updateUser(req, res) {
-        let user = req.body
-        if(!user.email) {
-            res.status(400).send('Missing required field: email.')
-            return
+        try {
+            const user = await userService.updateUser(req.body, req.userId)
+            if (!user) res.status(404).send('User not found.')
+            else res.send(user)
+        } catch (err) {
+            if (err instanceof ValidationError) res.status(400).send(err.message)
+            else res.status(500).send(err.message)
         }
-        if(user.email != req.email) {
-            res.status(401).send('User to update email does not match logged user email.')
-            return
-        }
-        user = await userService.updateUser(user)
-        if(!user) {
-            res.status(404).send('User not found.')
-            return
-        }
-        res.status(200).send(user)
-        return
     }
 
     async function retrieveUserById(req, res) {
-        const userId = req.params?.id
-        if (!userId) {
-            res.status(400).send('Missing required param: id.')
-            return
+        try {
+            const user = await userService.retrieveUserById(req.params.id)
+            if (!user) res.status(404).send('User not found.')
+            else res.send(user)
+        } catch (err) {
+            if (err instanceof CastError) res.status(400).send('Invalid id.')
+            else res.status(500).send(err.message)
         }
-        const user = await userService.retrieveUserById(userId)
-        if (!user) res.status(404).send('User not found.')
-        else res.status(200).send(user)
-        return
     }
   
     return {
