@@ -6,7 +6,6 @@ const modelMocker = require('../../mocks/modelMocker')
 const userModel = require('../../../src/v1/models/user.model')
 const { CastError } = require('mongoose').Error
 const { ObjectId } = require('mongoose').Types
-const testUtils = require('../../utils/testUtils')()
 
 describe('User Endpoint', function () {
     let modelMock

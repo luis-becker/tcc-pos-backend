@@ -1,17 +1,26 @@
-const { default: mongoose } = require("mongoose")
-
 function authMiddleware(authService, userService) {
 
   async function authorization(req, res, next) {
-    let authToken = req.headers.authtoken
-    let email = await authService.validateToken(authToken)
-    let user = await userService.retrieveUserByEmail(email)
-    if (email) {
-      req.email = email
-      req.userId = user?._id?.toString()
-      await next()
-    } else {
-      res.status(401).send('Invalid Token.')
+    try {
+      let auth = await authService.validateToken(req.headers.authtoken)
+      if (!auth) {
+        res.status(401).send('Invalid Token.')
+        return
+      }
+      if (!auth.user) {
+        let user = await userService.retrieveUserByEmail(auth.email)
+        if (user) {
+          auth = await authService.addUserRef(user._id, auth.email)
+        }
+      }
+  
+      req.email = auth.email
+      req.userId = auth.user
+  
+      next()
+    }
+    catch (err) {
+      res.status(500).send(err.message)
     }
   }
 
