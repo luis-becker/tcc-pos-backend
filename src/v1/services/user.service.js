@@ -28,8 +28,8 @@ function userService(userModel) {
     }
 
     async function retrieveUserById(userId) {
-        const user = await userModel.getUserById(userId)
-        delete user?.email
+        const user = await userModel.findOne({ _id: userId })
+        delete user?._doc.email
         return user
     }
 

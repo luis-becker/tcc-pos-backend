@@ -176,7 +176,6 @@ describe('Auth Endpoint', function () {
 
     it('should return 200 if token is valid', async function () {
       await controller.logout(reqMock, resMock)
-      console.log(resMock.message)
       assert.equal(resMock.code, 200);
       assert.equal(resMock.message, 'User logged out.');
     })

@@ -7,7 +7,6 @@ function authController(authService) {
       let { email } = await authService.createAuth(req.body)
       res.status(201).send({ email })
     } catch (err) {
-      console.log(err)
       if (err instanceof ValidationError) res.status(400).send(err.message)
       else if (err.code === 11000) res.status(409).send('User already exists.')
       else res.status(500).send(err)

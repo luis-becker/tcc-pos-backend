@@ -44,18 +44,6 @@ function userController(userService) {
             else res.status(500).send(err.message)
         }
     }
-
-    async function retrieveUserById(req, res) {
-        const userId = req.params?.id
-        if (!userId) {
-            res.status(400).send('Missing required param: id.')
-            return
-        }
-        const user = await userService.retrieveUserById(userId)
-        if (!user) res.status(404).send('User not found.')
-        else res.status(200).send(user)
-        return
-    }
   
     return {
         createUser,
