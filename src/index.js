@@ -1,5 +1,5 @@
 const express = require('express')
-const {dbConnector, middlewares, routers} = require('./v1/config/dependencyTree')
+const {middlewares, routers} = require('./v1/config/dependencyTree')
 const database = require('./v1/utils/mongooseConnector')
 console.log(database)
 
@@ -14,8 +14,6 @@ app.use('/api/v1/auth', routers.auth)
 app.use('/api/v1/user', routers.user)
 app.use('/api/v1/schedule', routers.schedule)
 
-dbConnector.connect().then(()=>{
-  app.listen(port, () => {
-    console.log(`App listening on port ${port}`)
-  })
+app.listen(port, () => {
+  console.log(`App listening on port ${port}`)
 })
