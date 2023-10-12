@@ -19,6 +19,10 @@ function modelMocker(model, objList) {
             })
         }
 
+        validate() {
+            return this.obj.validate()
+        }
+
         static async find(params) {
             return this.objList.map(obj => new this(obj))
         }
