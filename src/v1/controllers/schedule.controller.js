@@ -10,6 +10,10 @@ function scheduleController(scheduleService) {
     catch (err) {
       if (err instanceof ValidationError) {
         res.status(400).send(err.message)
+      } else if (err.message == 'Owner not found.'){
+        res.status(400).send(err.message)
+      } else if (err.message == 'Invalid schedule time.'){
+        res.status(400).send(err.message)
       } else {
         res.status(500).send('Service Unavailable.')
       }
