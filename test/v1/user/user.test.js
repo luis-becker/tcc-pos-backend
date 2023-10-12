@@ -4,6 +4,7 @@ const userService = require('../../../src/v1/services/user.service')
 const userController = require('../../../src/v1/controllers/user.controller')
 const modelMocker = require('../../mocks/modelMocker')
 const userModel = require('../../../src/v1/models/user.model')
+const scheduleModel = require('../../../src/v1/models/schedule.model')
 const { CastError } = require('mongoose').Error
 const { ObjectId } = require('mongoose').Types
 
@@ -16,7 +17,7 @@ describe('User Endpoint', function () {
 
     beforeEach(() => {
         modelMock = modelMocker(userModel)
-        service = userService(modelMock)
+        service = userService(modelMock, modelMocker(scheduleModel, [{ attendee: { ref: new ObjectId()}, time: { start: new Date(), end: new Date() } }]))
         controller = userController(service)
         resMock = resMocker()
         reqMock = {
@@ -167,7 +168,7 @@ describe('User Endpoint', function () {
             }
             modelMock.objList = [user]
         })
-        
+
         it('Should retrieve user without email', async function () {
             await controller.retrieveUserById(reqMock, resMock)
             assert.equal(resMock.code, 200)
@@ -189,6 +190,15 @@ describe('User Endpoint', function () {
             await controller.retrieveUserById(reqMock, resMock)
             assert.equal(resMock.code, 400)
             assert.equal(resMock.message, 'Invalid id.')
+        })
+
+        it('Schould retrieve user with only time of schedules', async function () {
+            await controller.retrieveUserById(reqMock, resMock)
+            assert.equal(resMock.code, 200)
+            assert.equal(resMock.message._doc.schedules?.length, 1)
+            assert.equal(resMock.message._doc.schedules[0].attendee, undefined)
+            assert.notEqual(resMock.message._doc.schedules[0].startTime, undefined)
+            assert.notEqual(resMock.message._doc.schedules[0].endTime, undefined)
         })
     })
 })

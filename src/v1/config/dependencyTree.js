@@ -30,7 +30,7 @@ const models = {
 // Services
 const services = {
   auth: authService(models.auth),
-  user: userService(models.user),
+  user: userService(models.user, models.schedule),
   schedule: scheduleService(models.schedule)
 }
 
