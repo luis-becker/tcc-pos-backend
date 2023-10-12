@@ -1,4 +1,4 @@
-function userService(userModel) {
+function userService(userModel, scheduleModel) {
 
     async function createUser(params, email) {
         params.email = email
@@ -28,8 +28,17 @@ function userService(userModel) {
     }
 
     async function retrieveUserById(userId) {
-        const user = await userModel.findOne({ _id: userId })
-        delete user?._doc.email
+        let user = await userModel.findOne({ _id: userId })
+        if (user) {
+            delete user._doc.email
+            let schedules = await scheduleModel.find({'owner.ref': userId, canceled: undefined})
+            user._doc.schedules = schedules.map((e) => {
+                return {
+                    startTime: e.time.start,
+                    endTime: e.time.end
+                }
+            })
+        }
         return user
     }
 
