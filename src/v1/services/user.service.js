@@ -23,21 +23,18 @@ function userService(userModel, scheduleModel) {
 
     async function retrieveUserById(userId) {
         let user = await userModel.findOne({ _id: userId })
-        delete user?._doc?.email
-        return user
-    }
-
-    async function retrieveUserById(userId) {
-        let user = await userModel.findOne({ _id: userId })
         if (user) {
             delete user._doc.email
             let schedules = await scheduleModel.find({'owner.ref': userId, canceled: undefined})
-            user._doc.schedules = schedules.map((e) => {
-                return {
-                    startTime: e.time.start,
-                    endTime: e.time.end
+            user._doc.schedules = schedules.reduce((acc, e) => {
+                if(!e.canceled) {
+                    acc.push({
+                        startTime: e.time.start,
+                        endTime: e.time.end
+                    })
                 }
-            })
+                return acc
+            }, [])
         }
         return user
     }
