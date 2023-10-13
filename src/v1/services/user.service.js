@@ -23,12 +23,6 @@ function userService(userModel, scheduleModel) {
 
     async function retrieveUserById(userId) {
         let user = await userModel.findOne({ _id: userId })
-        delete user?._doc?.email
-        return user
-    }
-
-    async function retrieveUserById(userId) {
-        let user = await userModel.findOne({ _id: userId })
         if (user) {
             delete user._doc.email
             let schedules = await scheduleModel.find({'owner.ref': userId, canceled: undefined})
