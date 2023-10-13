@@ -8,8 +8,8 @@ function scheduleService(scheduleModel, userModel) {
     await schedule.validate()
     let owner = await userModel.findOne({ _id: schedule.owner.ref })
     if (!owner) throw Error('Owner not found.')
-    let ownerSchedules = await scheduleModel.find({'owner.ref' : owner._id})
-    if(!checkOwnerSchedules(schedule, owner, ownerSchedules)) throw Error('Invalid schedule time.')
+    let ownerSchedules = await scheduleModel.find({ 'owner.ref': owner._id })
+    if (!checkOwnerSchedules(schedule, owner, ownerSchedules)) throw Error('Invalid schedule time.')
     return await schedule.save()
   }
 
@@ -45,18 +45,20 @@ function checkOwnerSchedules(schedule, owner, ownerSchedules) {
 
   isValidTime = owner.agenda.reduce((acc, ownerTime) => {
     let weekDay = schedule.time.start.getDay()
-    let start = {hour: schedule.time.start.getHours(), minute: schedule.time.start.getMinutes()}
-    let end = {hour: schedule.time.end.getHours(), minute: schedule.time.end.getMinutes()}
+    let start = { hour: schedule.time.start.getHours(), minute: schedule.time.start.getMinutes() }
+    let end = { hour: schedule.time.end.getHours(), minute: schedule.time.end.getMinutes() }
 
-    if(ownerTime.weekDay != weekDay) return acc
-    if(ownerTime.startTime.hour != start.hour) return acc
-    if(ownerTime.startTime.minute != start.minute) return acc
-    if(ownerTime.endTime.hour != end.hour) return acc
-    if(ownerTime.endTime.minute != end.minute) return acc
+    if (ownerTime.weekDay != weekDay) return acc
+    if (ownerTime.startTime.hour != start.hour) return acc
+    if (ownerTime.startTime.minute != start.minute) return acc
+    if (ownerTime.endTime.hour != end.hour) return acc
+    if (ownerTime.endTime.minute != end.minute) return acc
     return true
   }, false)
-  
+
   isFree = ownerSchedules.reduce((acc, e) => {
+    if (e.canceled) return acc
+
     let start1 = e.time.start
     let end1 = e.time.end
     let start2 = schedule.time.start
@@ -65,7 +67,7 @@ function checkOwnerSchedules(schedule, owner, ownerSchedules) {
     if ((start1 < end2 && end1 > start2) || (start2 < end1 && end2 > start1)) {
       return false
     }
-      return acc
+    return acc
   }, true)
 
   return isValidTime && isFree

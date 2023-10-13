@@ -26,12 +26,15 @@ function userService(userModel, scheduleModel) {
         if (user) {
             delete user._doc.email
             let schedules = await scheduleModel.find({'owner.ref': userId, canceled: undefined})
-            user._doc.schedules = schedules.map((e) => {
-                return {
-                    startTime: e.time.start,
-                    endTime: e.time.end
+            user._doc.schedules = schedules.reduce((acc, e) => {
+                if(!e.canceled) {
+                    acc.push({
+                        startTime: e.time.start,
+                        endTime: e.time.end
+                    })
                 }
-            })
+                return acc
+            }, [])
         }
         return user
     }

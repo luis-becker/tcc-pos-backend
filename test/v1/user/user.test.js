@@ -14,10 +14,32 @@ describe('User Endpoint', function () {
     let controller
     let resMock
     let reqMock
+    let schedules = [
+        { 
+            attendee: { 
+                ref: new ObjectId()
+            }, 
+            time: { 
+                start: new Date(),
+                end: new Date()
+            }
+        },
+        { 
+            attendee: { 
+                ref: new ObjectId()
+            }, 
+            time: { 
+                start: new Date(),
+                end: new Date()
+            },
+            canceled: true
+        },
+
+    ]
 
     beforeEach(() => {
         modelMock = modelMocker(userModel)
-        service = userService(modelMock, modelMocker(scheduleModel, [{ attendee: { ref: new ObjectId()}, time: { start: new Date(), end: new Date() } }]))
+        service = userService(modelMock, modelMocker(scheduleModel, schedules))
         controller = userController(service)
         resMock = resMocker()
         reqMock = {
@@ -192,13 +214,14 @@ describe('User Endpoint', function () {
             assert.equal(resMock.message, 'Invalid id.')
         })
 
-        it('Schould retrieve user with only time of schedules', async function () {
+        it('Schould retrieve user with only time of schedules and no canceled schedules', async function () {
             await controller.retrieveUserById(reqMock, resMock)
             assert.equal(resMock.code, 200)
             assert.equal(resMock.message._doc.schedules?.length, 1)
             assert.equal(resMock.message._doc.schedules[0].attendee, undefined)
             assert.notEqual(resMock.message._doc.schedules[0].startTime, undefined)
             assert.notEqual(resMock.message._doc.schedules[0].endTime, undefined)
+            assert.equal(resMock.message._doc.schedules[0].canceled, undefined)
         })
     })
 })
