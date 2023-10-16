@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3001:3001"
     volumes:
       - ./:/app
     depends_on:
@@ -17,6 +17,8 @@ services:
       MONGO_USER: backend-service
       MONGO_PASSWORD: password
     command: "npm run watch"
+    networks:
+      - tcc-pos-net
 
   mongodb:
     container_name: mongodb
@@ -30,3 +32,9 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: secret
       MONGO_INITDB_DATABASE: root-db
+    networks:
+      - tcc-pos-net
+
+networks:
+  tcc-pos-net:
+    external: true
