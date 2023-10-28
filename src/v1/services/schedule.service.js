@@ -3,7 +3,8 @@ const { default: mongoose } = require("mongoose")
 function scheduleService(scheduleModel, userModel) {
 
   async function createSchedule(params, userId) {
-    params.attendee = { ref: userId }
+    let user = await userModel.findOne({ _id: userId })
+    params.attendee = { ref: userId, name: user.name }
     let schedule = new scheduleModel(params)
     await schedule.validate()
     let owner = await userModel.findOne({ _id: schedule.owner.ref })
