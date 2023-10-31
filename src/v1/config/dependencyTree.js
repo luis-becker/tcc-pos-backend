@@ -14,6 +14,10 @@ const scheduleModel = require('../models/schedule.model')
 const scheduleService = require('../services/schedule.service')
 const scheduleController = require('../controllers/schedule.controller')
 const scheduleRouter = require('../routes/schedule.routes')
+const notificationModel = require('../models/notification.model')
+const notificationService = require('../services/notification.service')
+const notificationRouter = require('../routes/notification.routes')
+const notificationController = require('../controllers/notification.controller')
 
 
 
@@ -25,20 +29,23 @@ const models = {
   auth: authModel,
   user: userModel,
   schedule: scheduleModel,
+  notification: notificationModel
 }
 
 // Services
 const services = {
   auth: authService(models.auth),
   user: userService(models.user, models.schedule),
-  schedule: scheduleService(models.schedule, models.user)
+  schedule: scheduleService(models.schedule, models.user),
+  notification: notificationService(models.notification)
 }
 
 // Controllers
 const controllers = {
   auth: authController(services.auth),
   user: userController(services.user),
-  schedule: scheduleController(services.schedule)
+  schedule: scheduleController(services.schedule, services.notification),
+  notification: notificationController(services.notification)
 }
 
 // Middlewares
@@ -52,7 +59,8 @@ const middlewares = {
 const routers = {
   auth: authRouter(middlewares.auth, controllers.auth),
   user: userRouter(middlewares.auth, controllers.user),
-  schedule: scheduleRouter(middlewares.auth, controllers.schedule)
+  schedule: scheduleRouter(middlewares.auth, controllers.schedule),
+  notification: notificationRouter(middlewares.auth, controllers.notification)
 }
 
 module.exports = {

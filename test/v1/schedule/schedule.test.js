@@ -32,13 +32,14 @@ describe('Schedule Endpoint', function () {
     beforeEach(() => {
         modelMock = modelMocker(scheduleModel)
         service = scheduleService(modelMock, modelMocker(userModel, user))
-        controller = scheduleController(service)
+        controller = scheduleController(service, {createNotification: () => {}})
         resMock = resMocker()
         reqMock = {
             header: null,
             body: null,
             email: 'someEmail@someHost.com',
             userId: (new ObjectId()).toString(),
+            user: {name: 'name'},
             params: { id: (new ObjectId()).toString() }
         }
     })
@@ -60,6 +61,7 @@ describe('Schedule Endpoint', function () {
 
         it('Should create schedule', async function () {
             await controller.createSchedule(reqMock, resMock)
+            console.log(resMock)
             assert.equal(resMock.code, 201)
             assert.equal(resMock.message?.owner?.ref, schedule.owner.ref)
             assert.equal(resMock.message?.owner?.name, schedule.owner.name)

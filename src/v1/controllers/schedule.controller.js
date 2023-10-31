@@ -1,21 +1,28 @@
 const { ValidationError, CastError } = require("mongoose").Error
 
-function scheduleController(scheduleService) {
+function scheduleController(scheduleService, notificationService) {
 
   async function createSchedule(req, res) {
     try {
       const schedule = await scheduleService.createSchedule(req.body, req.userId)
+
+      const dateString = schedule.time.start.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+      const parts = dateString.split('/')
+      const month = parts[0]
+      const day = parts[1]
+      notificationService.createNotification({ userRef: req.body.owner.ref, message: `${req.user.name} marcou um horário no dia ${day}/${month}.` })
+
       res.status(201).send(schedule)
     }
     catch (err) {
       if (err instanceof ValidationError) {
         res.status(400).send(err.message)
-      } else if (err.message == 'Owner not found.'){
+      } else if (err.message == 'Owner not found.') {
         res.status(400).send(err.message)
-      } else if (err.message == 'Invalid schedule time.'){
+      } else if (err.message == 'Invalid schedule time.') {
         res.status(400).send(err.message)
       } else {
-        res.status(500).send('Service Unavailable.')
+        res.status(500).send(err.message)
       }
     }
   }
@@ -44,7 +51,16 @@ function scheduleController(scheduleService) {
     try {
       const schedule = await scheduleService.cancelSchedule(req.params.id, req.userId)
       if (!schedule) res.status(404).send('Schedule not found.')
-      else res.send(schedule)
+      else {
+        const dateString = schedule.time.start.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        const parts = dateString.split('/')
+        const month = parts[0]
+        const day = parts[1]
+        const user = schedule.owner.ref == req.userId ? schedule.owner : schedule.attendee
+        notificationService.createNotification({ userRef: user.ref, message: `${user.name} cancelou o horário do dia ${day}/${month}.` })
+
+        res.send(schedule)
+      }
     } catch (err) {
       if (err instanceof CastError) res.status(400).send('Invalid id.')
       else res.status(500).send(err.message)
