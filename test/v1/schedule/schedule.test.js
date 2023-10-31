@@ -32,7 +32,7 @@ describe('Schedule Endpoint', function () {
     beforeEach(() => {
         modelMock = modelMocker(scheduleModel)
         service = scheduleService(modelMock, modelMocker(userModel, user))
-        controller = scheduleController(service)
+        controller = scheduleController(service, {createNotification: () => {}})
         resMock = resMocker()
         reqMock = {
             header: null,
