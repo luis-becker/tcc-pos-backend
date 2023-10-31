@@ -13,6 +13,7 @@ app.use(middlewares.error.stdError)
 app.use('/api/v1/auth', routers.auth)
 app.use('/api/v1/user', routers.user)
 app.use('/api/v1/schedule', routers.schedule)
+app.use('/api/v1/notification', routers.notification)
 
 app.listen(port, () => {
   console.log(`App listening on port ${port}`)

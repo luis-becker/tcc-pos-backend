@@ -7,8 +7,8 @@ function authMiddleware(authService, userService) {
         res.status(401).send('Invalid Token.')
         return
       }
+      let user = await userService.retrieveUserByEmail(auth.email)
       if (!auth.user) {
-        let user = await userService.retrieveUserByEmail(auth.email)
         if (user) {
           auth = await authService.addUserRef(user._id, auth.email)
         }
@@ -16,6 +16,7 @@ function authMiddleware(authService, userService) {
   
       req.email = auth.email
       req.userId = auth.user
+      req.user = user
   
       next()
     }
