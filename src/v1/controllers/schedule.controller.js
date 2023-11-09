@@ -56,8 +56,8 @@ function scheduleController(scheduleService, notificationService) {
         const parts = dateString.split('/')
         const month = parts[0]
         const day = parts[1]
-        const user = schedule.owner.ref == req.userId ? schedule.owner : schedule.attendee
-        notificationService.createNotification({ userRef: user.ref, message: `${user.name} cancelou o horário do dia ${day}/${month}.` })
+        const user = schedule.owner.ref == req.userId ? schedule.attendee : schedule.owner
+        notificationService.createNotification({ userRef: user.ref, message: `${req.user.name} cancelou o horário do dia ${day}/${month}.` })
 
         res.send(schedule)
       }
